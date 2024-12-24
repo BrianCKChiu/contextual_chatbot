@@ -22,7 +22,7 @@ class ChromaService:
 
     @classmethod
     def initialize_client(self):
-        self.client = PersistentClient(Config.CHROMA_DATABASE_DIR)s
+        self.client = PersistentClient(Config.CHROMA_DATABASE_DIR)
         self.vector_store = Chroma(collection_name="test_collection",
                                    client=self.client,
                                    embedding_function=OpenAI.embeddings)
