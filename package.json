@@ -1,0 +1,13 @@
+{
+  "name": "@contextual_chatbot/root",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "packages/*",
+    "apps/*",
+    "services/*"
+  ],
+  "scripts": {
+    "check-types": "tsc --noEmit"
+  }
+}
