@@ -1,14 +1,19 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
+from sqlalchemy.orm import Session
+from uuid import uuid4
+
 
 from services.chroma_service import ChromaService
+from services.sqlite_service import get_conn
 from services.openai_service import OpenAiService
 
 from utils.recursive_splitter import RecursiveSplitter
 from utils.extract_text_file_contents import extract_text_file_contents
 
-from models.user_message_request import UserMessageRequest
-from models.upload_data_request import UploadDataRequest
+from models.contracts.user_message_request import UserMessageRequest
+from models.contracts.upload_data_request import UploadDataRequest
+from models.chat import Chat
 
 
 router = APIRouter(prefix="/contextual_bot", tags=["contextual_bot"])
@@ -27,13 +32,22 @@ async def upload_file(request: UploadDataRequest):
 
 
 @router.post("/chat")
-async def chat(request: UserMessageRequest):
+async def chat(request: UserMessageRequest, db_conn: Session = Depends(get_conn)):
     message = request.message
 
     return StreamingResponse(
         content=OpenAiService().stream_chat_completion(user_message=message),
         media_type="text/event-stream",
     )
+
+
+@router.post("/new-chat")
+async def start_chat(db_conn=Depends(get_conn)):
+    chat_id = str(uuid4())
+    chat = Chat(id=chat_id)
+    db_conn.add(chat)
+    db_conn.commit()
+    return {"chat_id": chat_id}
 
 
 @router.post("/query")
