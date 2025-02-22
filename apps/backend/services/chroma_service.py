@@ -44,7 +44,7 @@ class ChromaService:
             documents=documents,
             ids=uuids,
             embeddings=[
-                OpenAI.embeddings,
+                OpenAiService.embeddings,
             ],
         )
 
