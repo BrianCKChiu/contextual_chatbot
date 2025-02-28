@@ -3,7 +3,7 @@ from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from openai import OpenAI
 from config import Config
 from typing import Callable
-from models.chat_record import ChatRecordSchema, ChatRole
+from models.chat_record import ChatRole
 
 
 class OpenAiService:
@@ -18,7 +18,7 @@ class OpenAiService:
         self,
         user_message: str,
         message_history: list[dict] = [],
-        model="gpt-4o",
+        model="gpt-4o-mini",
         callback_function: Callable[[str, str, ChatRole], None] = None,
     ) -> AsyncGenerator[str, None]:
         """
@@ -27,21 +27,23 @@ class OpenAiService:
         Args:
             user_message (ChatCompletionMessageParam): user's new message
             message_history (list[ChatRecordSchema], optional): previous chat messages. Defaults to [].
-            model (str, optional): openAI model used to in the chat. Defaults to "gpt-4o".
+            model (str, optional): openAI model used to in the chat. Defaults to "gpt-4o-mini".
             callback_function (Callable[[str], None], optional): callback function to handle the open ai completed response. Defaults to None.
 
         Yields:
             AsyncGenerator[str, None]: Streamed chat completion
 
         """
-        print([{"role": "user", "content": user_message}] + message_history)
+
+        messages = message_history + [{"role": "user", "content": user_message}]
+        ai_response = ""
+
         response = self.client.chat.completions.create(
-            messages=[{"role": "user", "content": user_message}] + message_history,
+            messages=messages,
             model=model,
             stream=True,
         )
 
-        ai_response = ""
         for chunk in response:
             response = chunk.choices[0].delta.content
             if response is not None:

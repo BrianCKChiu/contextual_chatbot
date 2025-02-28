@@ -43,16 +43,17 @@ async def send_message(
     chat_query = select(Chat).where(Chat.id == chatId)
     chat = db_conn.execute(chat_query).scalar_one_or_none()
 
-    # if chat is None:
-    #     raise Exception("Chat not found")
+    # TODO: create new chat if chat is None
+    if chat is None:
+        raise Exception("Chat not found")
 
-    record_query = (
+    chat_records_query = (
         select(ChatRecord)
         .where(ChatRecord.chat_id == request.chat_id)
         .order_by(ChatRecord.datetime.desc())
     )
 
-    message_records = db_conn.scalars(record_query)
+    message_records = db_conn.scalars(chat_records_query)
 
     message_history: list[ChatRecordSchema] = [
         {"content": record.message, "role": record.role} for record in message_records
